@@ -1,0 +1,84 @@
+spring:
+  application:
+    name: emailservice
+  jmx:
+      enabled: false
+      default-domain: false
+
+
+  cloud:
+    function:
+      definition: loanSubmit;documentFailed;documentVerified
+    stream:
+      defaultBinder: solace-binder
+      bindings:
+        loanSubmit-in-0:
+          binder: solace-binder
+          destination: loans/originationservices/application/submitted/> 
+          content-type: application/json
+          
+          consumer:
+            queueName: scst/wk/AnnaQueue/plain/AnnaQueue
+
+        documentFailed-in-0:
+           binder: solace-binder
+           destination: loans/originationservices/documents/failed/>
+           content-type: application/json
+
+           consumer:
+             queueName: DocumentFailed
+ 
+        documentVerified-in-0:
+            binder: solace-binder
+            destination: loans/originationservices/documents/verified/>
+            content-type: application/json
+
+            consumer:
+              queueName: DocumentVerified
+
+               
+                    
+      binders:
+        solace-binder:
+          type: solace
+          environment:
+            solace:
+              java:
+                host: "tcps://mr-connection-1zlyvzw422t.messaging.solace.cloud:55443"
+                msgVpn: annasamplebrokerservice
+                clientUsername: solace-cloud-client
+                clientPassword: ekcr4bljrku5pusroecsmqmcub
+
+ 
+  mail:
+   host: smtp.gmail.com
+   port: 587
+   username: ${MAIL_USERNAME}
+   password: ${APP_PASSWORD}    
+   properties:
+    mail:
+     smtp:
+      auth: true
+      starttls:
+        enable: true
+        required: true
+
+
+
+logging:
+   level:
+     root: debug
+     com.solace: debug
+     com.solacesystems: debug
+     org.springframework.cloud.stream: debug
+     org.springframework.integration: info
+server:
+  port: 8081
+
+management:
+  endpoints:
+   jmx:
+     enabled: false
+   web:
+      exposure:
+        include: "*"
